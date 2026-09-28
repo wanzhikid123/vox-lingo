@@ -1,0 +1,99 @@
+# Abhängigkeiten und erzeugte Oberfläche
+node_modules/
+dist/
+coverage/
+.vite/
+.eslintcache
+*.tsbuildinfo
+
+# Lokaler Anwendungszustand und erzeugte Medien
+data/
+.cache/
+tmp/
+temp/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-shm
+*.sqlite3-wal
+*.pid
+*.pid.lock
+
+# Prüfberichte
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+*.trace.zip
+
+# Protokolle und Paketmanager-Diagnose
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Lokale Konfiguration und Zugangsdaten
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
+.secrets/
+secrets/
+.npmrc
+*.pem
+*.key
+*.ppk
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.credential
+*.credentials
+*.secret
+*.secrets
+credentials.json
+credentials.*.json
+service-account*.json
+service_account*.json
+
+# Editor- und Betriebssystemdateien
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporäre Dateien
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# Veraltete Windows-Launcher; die Vox-Lingo-Launcher bleiben versioniert
+/Start-KI-Englischlehrerin.cmd
+/Start-KI-Englischlehrerin.ps1
+/Restart-KI-Englischlehrerin.cmd
+/Stop-KI-Englischlehrerin.cmd
+/Stop-KI-Englischlehrerin.ps1
+
+# Migrationskopien und lokale Exporte
+.migration/
+backups/
+data-*/
+*.backup-v4-*/
+exports/
+*.sqlite-*
+*.sqlite3-*
+*.db-*

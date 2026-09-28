@@ -1,0 +1,35 @@
+{
+  "name": "ki-englischlehrerin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node --watch server/index.js",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "test": "node --test test/*.test.js",
+    "test:browser": "playwright test",
+    "check:api": "node scripts/check-api.js",
+    "format": "prettier --write server src shared scripts/*.js test *.js *.json index.html"
+  },
+  "dependencies": {
+    "@google/genai": "2.24.0",
+    "@twemoji/svg": "15.0.0",
+    "emojibase-data": "17.0.0",
+    "express": "^5.1.0",
+    "lucide-react": "^0.544.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "ws": "^8.18.3",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@vitejs/plugin-react": "^5.0.3",
+    "prettier": "^3.9.6",
+    "vite": "^7.1.5"
+  }
+}
