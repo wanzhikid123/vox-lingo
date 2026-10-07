@@ -16,6 +16,7 @@ function setup(t, options = {}) {
     OPENAI_API_KEY: "fake-system-openai",
     GEMINI_API_KEY: "fake-system-gemini",
     DEEPSEEK_API_KEY: "fake-system-deepseek",
+    PLANBRIDGE_API_KEY: "fake-system-planbridge",
   };
   writeFileSync(
     join(directory, ".env"),
@@ -63,6 +64,28 @@ const request = (settings) => {
   const { revision, roles } = settings.state();
   return structuredClone({ revision, roles });
 };
+test("ChatGPTPlus selection persists independently and restores its own environment configuration", async (t) => {
+  const { settings, file, directory, env, factory } = setup(t);
+  const draft = request(settings);
+  draft.roles.live = { provider: "chatgptplus" };
+  settings.save(draft);
+  assert.equal(settings.state().options.live.chatgptplus.label, "ChatGPTPlus");
+  assert.equal(
+    (await settings.classroomAI.live()).apiKeyName,
+    "PLANBRIDGE_API_KEY",
+  );
+  const restored = new ModelSettings(
+    loadConfig({ ...env, CHATGPT_CODEX_VOICE: "cove" }, directory),
+    { file, factory },
+  );
+  assert.equal(restored.config.live.provider, "chatgptplus");
+  assert.equal(restored.config.live.voice, "cove");
+  assert.equal(restored.config.backend.provider, "openai");
+  assert.doesNotMatch(
+    readFileSync(file, "utf8"),
+    /fake-system|apiKey|baseUrl|voice|model/,
+  );
+});
 
 test("only provider choices persist; runtime parameters always come from environment configuration", async (t) => {
   const { settings, config, file, directory, env, factory } = setup(t);

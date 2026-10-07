@@ -1,6 +1,7 @@
 import { GeminiService } from "./gemini.js";
 import { OpenAIService } from "./openai.js";
 import { ResponsesService } from "./responses.js";
+import { PlanBridgeLiveService } from "./planbridge-live.js";
 
 // Each role gets its own provider configuration; keys and model settings cannot
 // bleed from Live to transcription, preparation or classroom decisions.
@@ -16,13 +17,18 @@ export function createAIServices(config, overrides = {}) {
         })
       : new ResponsesService(config.teacher));
   const LiveService =
-    config.live.provider === "gemini" ? GeminiService : OpenAIService;
+    config.live.provider === "chatgptplus"
+      ? PlanBridgeLiveService
+      : config.live.provider === "gemini"
+        ? GeminiService
+        : OpenAIService;
   const live =
     overrides.live ||
     new LiveService({
       apiKey: config.live.apiKey,
       liveModel: config.live.model,
       voice: config.live.voice,
+      baseUrl: config.live.baseUrl,
     });
   const TranscriptionService =
     config.transcription.provider === "gemini" ? GeminiService : OpenAIService;

@@ -233,8 +233,8 @@ test("OpenAI Live connects with SDP, acknowledges instructions and closes withou
   assert.equal(store.lesson(lesson.id).status, "ended_early");
   assert.equal(closed, 1);
 });
-test("a missing backend key prevents either Live provider from allocating a remote session", () => {
-  for (const provider of ["openai", "gemini"]) {
+test("a missing backend key prevents every Live provider from allocating a remote session", () => {
+  for (const provider of ["openai", "gemini", "chatgptplus"]) {
     const config = configFor({
       LIVE_MODEL_PROVIDER: provider,
       BACKEND_MODEL_PROVIDER: "deepseek",

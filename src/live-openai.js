@@ -1,8 +1,9 @@
 import { t as tr } from "./i18n.js";
 import { lessonApi } from "./api.js";
 import { readSpeechTempo } from "./speech-preference.js";
+
 export class LiveConnection {
-  constructor(id, stream, callbacks) {
+  constructor(id, stream, callbacks, { serverEvents = false } = {}) {
     this.id = id;
     this.stream = stream;
     this.callbacks = callbacks;
@@ -14,11 +15,14 @@ export class LiveConnection {
     this.audio.autoplay = true;
     this.audio.playsInline = true;
     this.sessionStarted = false;
+    this.serverEvents = serverEvents;
+    this.muted = false;
   }
   async connect() {
     const pc = new RTCPeerConnection();
     this.pc = pc;
     for (const track of this.stream.getTracks()) {
+      if (this.serverEvents) track.enabled = false;
       pc.addTrack(track, this.stream);
       track.onended = () =>
         this.fail(tr("Das Mikrofon wurde getrennt. Bitte verbinde es erneut."));
@@ -35,6 +39,7 @@ export class LiveConnection {
     };
     pc.onconnectionstatechange = () => {
       if (this.closed) return;
+      if (pc.connectionState === "connected") this.resolveMedia?.();
       if (pc.connectionState === "failed")
         this.fail(
           tr(
@@ -60,9 +65,9 @@ export class LiveConnection {
               "Die Sprachverbindung hat zu lange gebraucht. Bitte erneut versuchen.",
             ),
           ),
-        30000,
+        this.serverEvents ? 65000 : 30000,
       );
-      this.channel.onmessage = (e) => {
+      const receive = (e) => {
         let event;
         try {
           event = JSON.parse(e.data);
@@ -85,15 +90,36 @@ export class LiveConnection {
           if (event.type === "session.output_transcript.delta")
             this.lastTeacherActivity = Date.now();
           this.lastActivity = Date.now();
-          this.callbacks.onTranscript(event);
+          this.callbacks.onTranscript(
+            this.serverEvents ? { ...event, incremental: true } : event,
+          );
         }
       };
+      this.channel.onmessage = this.serverEvents ? () => {} : receive;
+      if (this.serverEvents) {
+        this.events = new EventSource(`/api/lessons/${this.id}/events`);
+        this.events.addEventListener("live-event", receive);
+        this.events.onerror = () => {
+          if (!this.closed)
+            this.fail(
+              tr(
+                "ChatGPTPlus: Die lokale Steuerverbindung wurde getrennt. Bitte erneut verbinden.",
+              ),
+            );
+        };
+        this.eventsOpened = new Promise((resolve, reject) => {
+          this.rejectEvents = reject;
+          this.events.addEventListener("open", resolve, { once: true });
+        });
+        this.eventsOpened.catch(() => {});
+      }
       this.channel.onclose = () => {
         if (!this.closed) this.fail("Die Sprachverbindung wurde geschlossen.");
       };
     });
     // The rejection handler is attached before network setup, avoiding an unhandled startup timeout.
     started.catch(() => {});
+    if (this.eventsOpened) await this.eventsOpened;
     await pc.setLocalDescription(await pc.createOffer());
     await new Promise((resolve, reject) => {
       if (pc.iceGatheringState === "complete") return resolve();
@@ -121,25 +147,34 @@ export class LiveConnection {
         sdp: pc.localDescription.sdp,
         tempo: readSpeechTempo(),
       },
-      {
-        signal: this.controller.signal,
-      },
+      { signal: this.controller.signal },
     );
     if (this.closed) throw new Error("Verbindung beendet.");
-    await pc.setRemoteDescription({
-      type: "answer",
-      sdp: result.sdp,
-    });
+    await pc.setRemoteDescription({ type: "answer", sdp: result.sdp });
     await started;
-    await lessonApi(
-      this.id,
-      "/ready",
-      {},
-      {
-        signal: this.controller.signal,
-      },
-    );
+    if (this.serverEvents && pc.connectionState !== "connected") {
+      await new Promise((resolve, reject) => {
+        this.resolveMedia = resolve;
+        this.rejectMedia = reject;
+        this.mediaTimer = setTimeout(
+          () =>
+            reject(
+              new Error(
+                tr(
+                  "ChatGPTPlus: Die Audioverbindung konnte nicht hergestellt werden.",
+                ),
+              ),
+            ),
+          20000,
+        );
+        if (pc.connectionState === "connected") resolve();
+      });
+      clearTimeout(this.mediaTimer);
+    }
+    await lessonApi(this.id, "/ready", {}, { signal: this.controller.signal });
     if (this.closed) throw new Error("Verbindung beendet.");
+    this.connected = true;
+    if (this.serverEvents) this.mute(this.muted);
     this.callbacks.onConnected();
     this.meterTimer = setInterval(() => this.sampleAudio(), 150);
   }
@@ -172,14 +207,13 @@ export class LiveConnection {
       const analyser = this.audioContext.createAnalyser();
       analyser.fftSize = 256;
       source.connect(analyser);
-      this.analyzers.push({
-        analyser,
-        isInput,
-      });
+      this.analyzers.push({ analyser, isInput });
     } catch {}
   }
   mute(muted) {
-    for (const track of this.stream.getAudioTracks()) track.enabled = !muted;
+    this.muted = muted;
+    for (const track of this.stream.getAudioTracks())
+      track.enabled = !muted && (!this.serverEvents || this.connected);
   }
   async play() {
     await this.audio.play();
@@ -190,21 +224,22 @@ export class LiveConnection {
     this.callbacks.onDisconnected(message);
   }
   close() {
-    if (this.closed) return;
+    if (this.closed) return this.closing;
     this.closed = true;
     this.controller.abort();
     clearTimeout(this.startTimer);
     clearTimeout(this.disconnectTimer);
     clearInterval(this.meterTimer);
+    clearTimeout(this.mediaTimer);
+    this.rejectMedia?.(new Error("Verbindung beendet."));
+    this.rejectEvents?.(new Error("Verbindung beendet."));
     this.rejectStartup?.(new Error("Verbindung beendet."));
-    if (this.channel?.readyState === "open" && this.sessionStarted)
-      this.channel.send(
-        JSON.stringify({
-          type: "session.close",
-        }),
-      );
-    this.channel?.close();
-    this.pc?.close();
+    if (
+      !this.serverEvents &&
+      this.channel?.readyState === "open" &&
+      this.sessionStarted
+    )
+      this.channel.send(JSON.stringify({ type: "session.close" }));
     this.stream.getTracks().forEach((t) => {
       t.onended = null;
       t.stop();
@@ -212,5 +247,21 @@ export class LiveConnection {
     this.audio.pause();
     this.audio.srcObject = null;
     this.audioContext?.close().catch(() => {});
+    const release = () => {
+      this.events?.close();
+      this.channel?.close();
+      this.pc?.close();
+    };
+    if (this.serverEvents) {
+      // Stop capture/playback now; keep media and sideband until the backend
+      // reports confirmed closure or an explicit failure.
+      this.closing = lessonApi(this.id, "/close-live", {})
+        .catch((error) => {
+          this.callbacks.onDisconnected?.(error.message);
+        })
+        .finally(release);
+      return this.closing;
+    }
+    release();
   }
 }

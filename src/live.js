@@ -24,9 +24,11 @@ export class LiveConnection {
         signal: this.controller.signal,
       });
       const transport =
-        health.live.provider === "gemini"
-          ? await import("./live-gemini.js")
-          : await import("./live-openai.js");
+        health.live.provider === "chatgptplus"
+          ? await import("./live-chatgptplus.js")
+          : health.live.provider === "gemini"
+            ? await import("./live-gemini.js")
+            : await import("./live-openai.js");
       if (this.closed) throw new Error("Verbindung beendet.");
       this.connection = new transport.LiveConnection(...this.args);
       await this.connection.connect();
@@ -44,7 +46,7 @@ export class LiveConnection {
   close() {
     this.closed = true;
     this.controller.abort();
-    if (this.connection) this.connection.close();
+    if (this.connection) return this.connection.close();
     else this.args[1].getTracks().forEach((track) => track.stop());
   }
 }

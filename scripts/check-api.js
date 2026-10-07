@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { config } from "../server/config.js";
+import { PlanBridgeLiveService } from "../server/planbridge-live.js";
 
 // Read-only model-access check. Never sends learner data or prints credentials.
 const checked = new Map();
@@ -16,7 +17,13 @@ for (const name of ["live", "backend", "teacher", "transcription"]) {
     if (!role.apiKey) result.status = `missing ${role.apiKeyName}`;
     else
       try {
-        if (role.provider === "gemini") {
+        if (role.provider === "chatgptplus") {
+          await new PlanBridgeLiveService({
+            ...role,
+            liveModel: role.model,
+          }).preflight();
+          result.status = "gateway ready; Live session not tested";
+        } else if (role.provider === "gemini") {
           const client = new GoogleGenAI({
             apiKey: role.apiKey,
             httpOptions: { apiVersion: "v1beta", timeout: 20000 },
@@ -50,5 +57,10 @@ for (const name of ["live", "backend", "teacher", "transcription"]) {
     checked.set(identity, result);
   }
   console.log(JSON.stringify({ role: name, ...result }));
-  if (result.status !== "model accessible") process.exitCode = 1;
+  if (
+    !["model accessible", "gateway ready; Live session not tested"].includes(
+      result.status,
+    )
+  )
+    process.exitCode = 1;
 }

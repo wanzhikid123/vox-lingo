@@ -45,11 +45,30 @@ const server = app.listen(config.port, "127.0.0.1", () => {
         ? "gemini"
         : "openai");
     if (
-      config.live.provider === "openai" &&
-      provider === "openai" &&
+      ["openai", "chatgptplus"].includes(config.live.provider) &&
+      provider === config.live.provider &&
       lesson.remote_id
     )
-      classroomAI.closeLive(lesson.remote_id).catch(() => {});
+      if (provider === "chatgptplus")
+        classroom.restoreLive(lesson.id, lesson.remote_id).catch(() => {});
+      else classroomAI.closeLive(lesson.remote_id).catch(() => {});
+  }
+  if (config.live.provider === "chatgptplus") {
+    for (const row of store.db
+      .prepare(
+        "SELECT id,state FROM lessons WHERE json_extract(state, '$.liveCloseUnconfirmed')=1",
+      )
+      .all()) {
+      const retained = JSON.parse(row.state);
+      if (
+        retained.liveProvider === "chatgptplus" &&
+        retained.liveCloseSessionId &&
+        !classroom.rooms.get(row.id)?.remoteClosing
+      )
+        classroom
+          .restoreLive(row.id, retained.liveCloseSessionId)
+          .catch(() => {});
+    }
   }
   console.log(
     `KI-Englischlehrerin ist bereit: http://127.0.0.1:${config.port}\nLive: ${config.live.provider}; Backend: ${config.backend.provider}; Teacher: ${config.teacher.provider}; Transcription: ${config.transcription.provider}`,

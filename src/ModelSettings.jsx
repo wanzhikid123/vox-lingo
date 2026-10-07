@@ -195,6 +195,8 @@ export function ModelSettings({ onClose, onSaved }) {
                       </select>
                     </div>
                     {display("model", tr("Modell"))}
+                    {option.values.baseUrl &&
+                      display("baseUrl", tr("Server-Adresse"))}
                     {option.values.voice && display("voice", tr("Stimme"))}
                     {option.values.reasoningEffort &&
                       display("reasoningEffort", tr("Denkintensität"))}

@@ -32,6 +32,7 @@ const config = loadConfig(
     OPENAI_API_KEY: "fixture-openai-not-a-real-key",
     GEMINI_API_KEY: "fixture-only-not-a-real-key",
     DEEPSEEK_API_KEY: "fixture-deepseek-not-a-real-key",
+    PLANBRIDGE_API_KEY: "fixture-planbridge-not-a-real-key",
   },
   ".cache/browser-config",
 );
@@ -67,11 +68,28 @@ const classroom = {
       },
     };
     this.rooms.set(id, room);
+    if (config.live.provider === "chatgptplus") {
+      this.emit("live-event", {
+        type: "session.started",
+        session: { id: "fixture-plus" },
+      });
+      return { sdp: "fixture-answer" };
+    }
+
     return {
       audioUrl: "/api/lessons/" + id + "/audio?ticket=" + room.mediaTicket,
     };
   },
   async ready() {},
+  async closeConnection(id) {
+    const room = this.rooms.get(id);
+    if (room) {
+      room.closing = true;
+      room.socket.readyState = 3;
+    }
+    return { finalized: true };
+  },
+
   async setSpeechTempo(id, tempo) {
     const lesson = store.lesson(id);
     lesson.state.speechTempo = tempo;
@@ -105,6 +123,7 @@ const classroom = {
     const room = this.rooms.get(id);
     if (room) {
       room.closing = true;
+      room.socket.readyState = 3;
       room.media?.close();
     }
     const lesson = store.finish(id, status);
@@ -493,6 +512,23 @@ app.post("/fixture/media", (req, res) => {
     frameSizes: room.frameSizes.slice(-10),
     playbackDrained: room.socket.playbackDrained,
   });
+});
+app.post("/fixture/live-event", (req, res) => {
+  classroom.emit("live-event", req.body);
+  res.json({ ok: true });
+});
+app.post("/fixture/idle", (_req, res) => {
+  for (const room of classroom.rooms.values()) {
+    room.closing = true;
+    room.media?.close();
+    room.socket.readyState = 3;
+  }
+  classroom.rooms.clear();
+  for (const row of store.db
+    .prepare("SELECT id FROM lessons WHERE status='active'")
+    .all())
+    store.finish(row.id, "interrupted");
+  res.json({ ok: true });
 });
 const server = app.listen(config.port, "127.0.0.1");
 attachLiveTransport(server, classroom, config);

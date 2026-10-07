@@ -12,6 +12,15 @@ Current baseline: the decisions in [I18N_PLAN.md](I18N_PLAN.md), approved on 202
 - Silence is not an incorrect answer. Uncertain recognition cannot become correct automatically. A transcript cannot establish precise pronunciation quality.
 - Keep the four provider roles, model/environment configuration, process-only key sources and local-only server binding.
 
+## ChatGPTPlus Live Provider
+
+- Port KI-Englischlehrerin's `gpt-live-1-codex` provider into Vox-Lingo while keeping the reference project read-only. Preserve its HTTP/WebRTC/sideband contract, native acknowledgement correlation, delegation IDs, error sanitization, cancellation cleanup and confirmed closure/recovery.
+- Read `PLANBRIDGE_BASE_URL`, `PLANBRIDGE_LIVE_MODEL` and `CHATGPT_CODEX_VOICE` from process environment, then project-root `.env`, then the reference defaults (`http://miniserver:8787/v1`, `gpt-live-1-codex`, `sol`). Read `PLANBRIDGE_API_KEY` only from process/Windows environment, including launcher import.
+- Add ChatGPTPlus only to the Live role. Persist only the provider choice; display its model, voice and gateway URL read-only. Reject incompatible URL/model/voice configuration and retain provider switching guards until closure is confirmed.
+- Keep browser microphone tracks disabled until the media connection and local classroom are ready. Receive business events and captions only through the backend sideband/SSE; retain suffix-fragment deduplication and acknowledged close before releasing the peer.
+- Preserve Vox-Lingo's frozen language context and neutral practice modes. Keep subsequent commands within 500 UTF-8 bytes, including all 18 instruction/target combinations, and rewrite oversized confirmed feedback through the selected classroom backend without executing tools.
+- Never use PlanBridge credentials for another provider's model-access check. Protect KI-Englischlehrerin's data directory, including junctions, from configuration that could write into it.
+
 ## Language Model
 
 - Interface and instruction independently support en, de, zh-CN. Target supports en, de, ja, ko, fr, es. Defaults: de/de/en; no automatic browser-language override.
@@ -47,4 +56,4 @@ Current baseline: the decisions in [I18N_PLAN.md](I18N_PLAN.md), approved on 202
 - Test all/selected batch scopes above eight topics, partial-field preservation, capacity, cancellation, timeout, restart and duplicate requests.
 - Keep provider routing/key separation and existing audio/lesson regressions. Separate mocked provider assertions from real model/microphone results.
 - Maintain English/Chinese README, requirements, validation and owned notices. Preserve historical validation dates, results and limitations. The approved Chinese plan remains a decision record.
-- Real multilingual voice quality on both providers, children/noise, long sessions and actual target devices is a separate acceptance boundary, never inferred from a successful build or payload test.
+- Real multilingual voice quality on all Live providers, children/noise, long sessions and actual target devices is a separate acceptance boundary, never inferred from a successful build or payload test.

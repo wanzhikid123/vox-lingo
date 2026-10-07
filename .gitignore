@@ -32,6 +32,8 @@ playwright-report/
 blob-report/
 playwright/.cache/
 *.trace.zip
+# Netzwerkaufzeichnungen können Authentifizierungsheader enthalten
+*.har
 
 # Protokolle und Paketmanager-Diagnose
 logs/
@@ -65,6 +67,18 @@ credentials.json
 credentials.*.json
 service-account*.json
 service_account*.json
+
+# Lokale OAuth-Anmeldungen und Token-Caches
+.auth/
+.oauth/
+auth.json
+auth.*.json
+oauth.json
+oauth.*.json
+token.json
+token.*.json
+tokens.json
+tokens.*.json
 
 # Editor- und Betriebssystemdateien
 .vscode/

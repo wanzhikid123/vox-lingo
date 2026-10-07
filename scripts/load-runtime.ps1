@@ -3,7 +3,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw 'Bitte Node.js ab Version 24 installieren.' }
 $major = [int]((node --version).TrimStart('v').Split('.')[0])
 if ($major -lt 24) { throw 'KI-Englischlehrerin benötigt Node.js ab Version 24.' }
-foreach ($keyName in @('OPENAI_API_KEY', 'GEMINI_API_KEY', 'DEEPSEEK_API_KEY')) {
+foreach ($keyName in @('OPENAI_API_KEY', 'GEMINI_API_KEY', 'DEEPSEEK_API_KEY', 'PLANBRIDGE_API_KEY')) {
   if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($keyName, 'Process'))) {
     $configuredKey = [Environment]::GetEnvironmentVariable($keyName, 'User')
     if ([string]::IsNullOrWhiteSpace($configuredKey)) { $configuredKey = [Environment]::GetEnvironmentVariable($keyName, 'Machine') }

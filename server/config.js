@@ -17,7 +17,7 @@ export const reasoningLevels = {
   gemini: ["minimal", "low", "medium", "high"],
 };
 export const roleProviders = {
-  live: ["openai", "gemini"],
+  live: ["openai", "gemini", "chatgptplus"],
   backend: ["openai", "deepseek"],
   transcription: ["openai", "gemini"],
   teacher: ["openai", "gemini", "deepseek"],
@@ -81,14 +81,33 @@ export function loadConfig(env = process.env, directory = root) {
   };
   const liveModel = (provider) => ({
     provider,
-    ...credential(provider),
+    ...credential(provider === "chatgptplus" ? "planbridge" : provider),
+    ...(provider === "chatgptplus"
+      ? { baseUrl: setting("PLANBRIDGE_BASE_URL", "http://miniserver:8787/v1") }
+      : {}),
     model: setting(
-      provider === "openai" ? "GPT_LIVE_MODEL" : "GEMINI_LIVE_MODEL",
-      provider === "openai" ? "gpt-live-1" : "gemini-3.8-live",
+      provider === "chatgptplus"
+        ? "PLANBRIDGE_LIVE_MODEL"
+        : provider === "openai"
+          ? "GPT_LIVE_MODEL"
+          : "GEMINI_LIVE_MODEL",
+      provider === "chatgptplus"
+        ? "gpt-live-1-codex"
+        : provider === "openai"
+          ? "gpt-live-1"
+          : "gemini-3.8-live",
     ),
     voice: setting(
-      provider === "openai" ? "GPT_VOICE" : "GEMINI_VOICE",
-      provider === "openai" ? "marin" : "Kore",
+      provider === "chatgptplus"
+        ? "CHATGPT_CODEX_VOICE"
+        : provider === "openai"
+          ? "GPT_VOICE"
+          : "GEMINI_VOICE",
+      provider === "chatgptplus"
+        ? "sol"
+        : provider === "openai"
+          ? "marin"
+          : "Kore",
     ),
   });
   const transcriptionModel = (provider) => ({
@@ -121,12 +140,47 @@ export function loadConfig(env = process.env, directory = root) {
     );
     selected[role] = modelDefaults[role][provider];
   }
+  const plus = modelDefaults.live.chatgptplus;
+  const gateway = new URL(plus.baseUrl);
+  if (
+    !["http:", "https:"].includes(gateway.protocol) ||
+    gateway.username ||
+    gateway.password ||
+    gateway.search ||
+    gateway.hash ||
+    !/^\/v1\/?$/.test(gateway.pathname)
+  )
+    throw new Error(
+      "PLANBRIDGE_BASE_URL must be an HTTP(S) URL ending in /v1 without credentials or query parameters.",
+    );
+  plus.baseUrl = plus.baseUrl.replace(/\/$/, "");
+  if (plus.model !== "gpt-live-1-codex")
+    throw new Error("PLANBRIDGE_LIVE_MODEL must be gpt-live-1-codex.");
+  if (
+    ![
+      "arbor",
+      "breeze",
+      "cove",
+      "ember",
+      "juniper",
+      "maple",
+      "sol",
+      "spruce",
+      "vale",
+    ].includes(plus.voice)
+  )
+    throw new Error("Invalid CHATGPT_CODEX_VOICE.");
   const port = Number(setting("KI_PORT", "3212"));
   if (!Number.isInteger(port) || port < 1 || port > 65535)
     throw new Error("Invalid KI_PORT.");
   const dataDir = canonical(resolve(directory, setting("KI_DATA_DIR", "data")));
-  for (const referenceName of ["EnglishLehrer", "EnglishLehrerGemini"]) {
+  for (const referenceName of [
+    "EnglishLehrer",
+    "EnglishLehrerGemini",
+    "KI-Englischlehrerin",
+  ]) {
     const reference = canonical(resolve(directory, "..", referenceName));
+    if (reference === canonical(resolve(directory))) continue;
     const within = relative(reference, dataDir);
     if (
       !within ||
@@ -150,6 +204,7 @@ export function publicConfig(config) {
     serviceTier,
     apiKeyName,
     apiKey,
+    baseUrl,
   }) => ({
     provider,
     model,
@@ -158,6 +213,7 @@ export function publicConfig(config) {
     serviceTier,
     apiKeyName,
     keyConfigured: Boolean(apiKey),
+    ...(provider === "chatgptplus" ? { baseUrl } : {}),
   });
   const missingClassroomKeys = [
     ...new Set(

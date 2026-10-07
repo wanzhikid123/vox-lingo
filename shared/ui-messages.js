@@ -1,5 +1,206 @@
 // Stable source-message keys. Saved lesson and chat content never passes through this catalog.
 const rows = [
+  [
+    "PLANBRIDGE_API_KEY wurde nicht akzeptiert.",
+    "PLANBRIDGE_API_KEY was not accepted.",
+    "PLANBRIDGE_API_KEY 未被接受。",
+  ],
+  [
+    "ChatGPTPlus: Die Server-Anmeldung fehlt.",
+    "ChatGPTPlus: Server login is missing.",
+    "ChatGPTPlus：服务器尚未登录。",
+  ],
+  [
+    "ChatGPTPlus: Die Server-Anmeldung muss erneuert werden.",
+    "ChatGPTPlus: Server login must be renewed.",
+    "ChatGPTPlus：服务器需要重新登录。",
+  ],
+  [
+    "ChatGPTPlus: Der einzige Gesprächsplatz ist gerade belegt. Bitte die vorherige Verbindung beenden.",
+    "ChatGPTPlus: The conversation slot is occupied. Please close the previous connection.",
+    "ChatGPTPlus：唯一的对话名额正在使用，请先结束之前的连接。",
+  ],
+  [
+    "ChatGPTPlus: Das Abonnementlimit ist erreicht. Bitte später erneut versuchen.",
+    "ChatGPTPlus: The subscription limit has been reached. Please try again later.",
+    "ChatGPTPlus：已达到订阅额度，请稍后重试。",
+  ],
+  [
+    "ChatGPTPlus: Keine Berechtigung für das Sprachmodell.",
+    "ChatGPTPlus: No permission to use the voice model.",
+    "ChatGPTPlus：没有使用该语音模型的权限。",
+  ],
+  [
+    "ChatGPTPlus: Eine Sprachanfrage entspricht nicht dem PlanBridge-Vertrag.",
+    "ChatGPTPlus: A voice request does not match the PlanBridge contract.",
+    "ChatGPTPlus：语音请求不符合 PlanBridge 接口要求。",
+  ],
+  [
+    "ChatGPTPlus: Der Sprachdienst hat einen Befehl abgelehnt. Die Verbindung kann weiterhin bestehen.",
+    "ChatGPTPlus: The voice service rejected a command. The connection may still be active.",
+    "ChatGPTPlus：语音服务拒绝了一条指令，连接可能仍然有效。",
+  ],
+  [
+    "ChatGPTPlus: Die Sprachanweisung wurde vom Dienst nicht bestätigt. Bitte die Sprachverbindung neu starten.",
+    "ChatGPTPlus: The voice command was not confirmed. Please reconnect.",
+    "ChatGPTPlus：语音指令尚未确认，请重新连接。",
+  ],
+  [
+    "ChatGPTPlus: Zu viele Sprachanweisungen warten auf Bestätigung.",
+    "ChatGPTPlus: Too many voice commands are waiting for confirmation.",
+    "ChatGPTPlus：等待确认的语音指令过多。",
+  ],
+  [
+    "ChatGPTPlus: Die Verbindung zum Sprachdienst wurde unterbrochen.",
+    "ChatGPTPlus: The voice service connection was interrupted.",
+    "ChatGPTPlus：语音服务连接已中断。",
+  ],
+  [
+    "ChatGPTPlus: Das Ende wurde vom Sprachdienst noch nicht bestätigt. Bitte erneut auf Beenden klicken.",
+    "ChatGPTPlus: Closure has not been confirmed. Please click End again.",
+    "ChatGPTPlus：语音服务尚未确认关闭，请再次点击结束。",
+  ],
+  [
+    "ChatGPTPlus: Das Ende wurde noch nicht bestätigt. Bitte erneut auf Beenden klicken.",
+    "ChatGPTPlus: Closure has not been confirmed. Please click End again.",
+    "ChatGPTPlus：尚未确认关闭，请再次点击结束。",
+  ],
+  [
+    "ChatGPTPlus ist gerade nicht erreichbar. Bitte die Server-Verbindung prüfen.",
+    "ChatGPTPlus is unavailable. Please check the server connection.",
+    "ChatGPTPlus 当前不可用，请检查服务器连接。",
+  ],
+  [
+    "Bitte PLANBRIDGE_API_KEY als Windows-Umgebungsvariable setzen und das Programm neu starten.",
+    "Please set PLANBRIDGE_API_KEY in the Windows environment and restart the app.",
+    "请在 Windows 环境变量中配置 PLANBRIDGE_API_KEY，然后重启应用。",
+  ],
+  [
+    "ChatGPTPlus: Die Erstellung ist nicht bestätigt. Bitte nicht mehrfach starten; der Server bereinigt Sitzungen ohne Steuerverbindung.",
+    "ChatGPTPlus: Session creation is unconfirmed. Please avoid repeated starts; the server cleans up sessions without a control connection.",
+    "ChatGPTPlus：会话创建尚未确认，请勿重复启动；服务器会清理没有控制连接的会话。",
+  ],
+  [
+    "ChatGPTPlus: Der Server ist nicht erreichbar oder antwortet nicht rechtzeitig.",
+    "ChatGPTPlus: The server is unavailable or timed out.",
+    "ChatGPTPlus：服务器不可达或响应超时。",
+  ],
+  [
+    "ChatGPTPlus: Bitte die native Anmeldung und Modellberechtigung auf dem PlanBridge-Server prüfen.",
+    "ChatGPTPlus: Please check native login and model permission on the PlanBridge server.",
+    "ChatGPTPlus：请检查 PlanBridge 服务器的原生登录状态和模型权限。",
+  ],
+  [
+    "ChatGPTPlus: Der Server meldet keinen Live-Vertrag.",
+    "ChatGPTPlus: The server does not report Live support.",
+    "ChatGPTPlus：服务器未报告 Live 接口支持。",
+  ],
+  [
+    "ChatGPTPlus: Gültige WebRTC-Audiodaten fehlen.",
+    "ChatGPTPlus: Valid WebRTC audio data is missing.",
+    "ChatGPTPlus：缺少有效的 WebRTC 音频数据。",
+  ],
+  [
+    "ChatGPTPlus: Der Unterrichtskontext ist zu groß.",
+    "ChatGPTPlus: The lesson context is too large.",
+    "ChatGPTPlus：课程上下文过大。",
+  ],
+  [
+    "ChatGPTPlus: Die erstellte Sitzung hat keine gültige Kennung.",
+    "ChatGPTPlus: The session has no valid identifier.",
+    "ChatGPTPlus：会话缺少有效标识。",
+  ],
+  [
+    "ChatGPTPlus: Die Audioantwort ist ungültig.",
+    "ChatGPTPlus: The audio response is invalid.",
+    "ChatGPTPlus：音频响应无效。",
+  ],
+  [
+    "ChatGPTPlus: Diese Steuerverbindung ist nicht verfügbar.",
+    "ChatGPTPlus: This control connection is unavailable.",
+    "ChatGPTPlus：此控制连接不可用。",
+  ],
+  [
+    "ChatGPTPlus: Die Sprachsteuerung startet nicht rechtzeitig.",
+    "ChatGPTPlus: Voice control did not start in time.",
+    "ChatGPTPlus：语音控制启动超时。",
+  ],
+  [
+    "ChatGPTPlus: Die Sitzung wurde vor dem Start geschlossen.",
+    "ChatGPTPlus: The session closed before starting.",
+    "ChatGPTPlus：会话在启动前已关闭。",
+  ],
+  [
+    "ChatGPTPlus: Die Steuerverbindung ist fehlgeschlagen.",
+    "ChatGPTPlus: The control connection failed.",
+    "ChatGPTPlus：控制连接失败。",
+  ],
+  [
+    "ChatGPTPlus: Die Steuerverbindung wurde vor dem Start geschlossen.",
+    "ChatGPTPlus: The control connection closed before starting.",
+    "ChatGPTPlus：控制连接在启动前已关闭。",
+  ],
+  [
+    "ChatGPTPlus: Die Sprachverbindung ist unterbrochen.",
+    "ChatGPTPlus: The voice connection is interrupted.",
+    "ChatGPTPlus：语音连接已中断。",
+  ],
+  [
+    "ChatGPTPlus: Eine Sprachanweisung überschreitet den zulässigen Vertrag (500 UTF-8-Bytes).",
+    "ChatGPTPlus: A voice command exceeds the 500 UTF-8 byte limit.",
+    "ChatGPTPlus：语音指令超过 500 UTF-8 字节上限。",
+  ],
+  [
+    "ChatGPTPlus: Ungültiger Delegationsbezug.",
+    "ChatGPTPlus: Invalid delegation reference.",
+    "ChatGPTPlus：委派引用无效。",
+  ],
+  [
+    "ChatGPTPlus: Sprachanweisung nicht gesendet.",
+    "ChatGPTPlus: The voice command was not sent.",
+    "ChatGPTPlus：语音指令未发送。",
+  ],
+  [
+    "ChatGPTPlus: Die Rückmeldung ist zu lang. Bitte erneut fortsetzen.",
+    "ChatGPTPlus: The feedback is too long. Please resume again.",
+    "ChatGPTPlus：反馈过长，请再次继续。",
+  ],
+  [
+    "ChatGPTPlus: Eine Sprachanweisung wurde abgelehnt.",
+    "ChatGPTPlus: A voice command was rejected.",
+    "ChatGPTPlus：语音指令被拒绝。",
+  ],
+  [
+    "Die Rückmeldung wurde durch eine neue Äußerung beendet.",
+    "New speech cancelled the feedback.",
+    "新的发言已取消此前反馈。",
+  ],
+  [
+    "Die Rückmeldung wurde beendet.",
+    "The feedback was cancelled.",
+    "反馈已取消。",
+  ],
+  [
+    "Dieser Abschluss gehört nicht zum gewählten Anbieter.",
+    "This closure does not belong to the selected provider.",
+    "此关闭操作不属于所选服务商。",
+  ],
+  ["Server-Adresse", "Server address", "服务器地址"],
+  [
+    "ChatGPTPlus: Die lokale Steuerverbindung wurde getrennt. Bitte erneut verbinden.",
+    "ChatGPTPlus: The local control connection was lost. Please reconnect.",
+    "ChatGPTPlus：本地控制连接已断开，请重新连接。",
+  ],
+  [
+    "ChatGPTPlus: Die Audioverbindung konnte nicht hergestellt werden.",
+    "ChatGPTPlus: The audio connection could not be established.",
+    "ChatGPTPlus：无法建立音频连接。",
+  ],
+  [
+    "ChatGPTPlus: Das Gespräch wird beendet. Die Bestätigung des Sprachdienstes steht noch aus.",
+    "ChatGPTPlus: The conversation is closing. Waiting for confirmation from the voice service.",
+    "ChatGPTPlus：正在结束对话，等待语音服务确认。",
+  ],
   ["Hauptnavigation", "Main navigation", "主导航"],
   [
     "Mia, die freundliche Lerneule",

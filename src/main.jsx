@@ -117,6 +117,7 @@ function App() {
       openai: "OpenAI",
       gemini: tr("Google Gemini"),
       deepseek: "DeepSeek",
+      chatgptplus: "ChatGPTPlus",
     })[provider] || "…";
   const backendName = providerName(health?.backend?.provider);
   const liveName = providerName(health?.live?.provider);
@@ -942,7 +943,8 @@ function Classroom({
           }
         },
         onTranscript: (e) => {
-          if (mounted.current) setRows((r) => mergeTranscript(r, e));
+          if (mounted.current)
+            setRows((r) => mergeTranscript(r, e, e.incremental));
         },
         onConnected: () => {
           if (mounted.current) {
@@ -988,7 +990,18 @@ function Classroom({
         at: Date.now(),
       };
       setElapsed(l.duration_ms);
-      if (["completed", "ended_early"].includes(l.status) && !closing.current) {
+      if (l.state.liveCloseUnconfirmed && statusRef.current === "connected") {
+        release();
+        setStatus("disconnected");
+        setNotice(
+          "ChatGPTPlus: Das Gespräch wird beendet. Die Bestätigung des Sprachdienstes steht noch aus.",
+        );
+      }
+      if (
+        ["completed", "ended_early"].includes(l.status) &&
+        !l.state.liveCloseUnconfirmed &&
+        !closing.current
+      ) {
         closing.current = true;
         release();
         setStatus("disconnected");

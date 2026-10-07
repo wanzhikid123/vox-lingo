@@ -17,12 +17,24 @@ const names = {
   openai: "OpenAI",
   gemini: "Google Gemini",
   deepseek: "DeepSeek",
+  chatgptplus: "ChatGPTPlus",
 };
-const fields = ["provider", "model", "voice", "reasoningEffort", "serviceTier"];
+const fields = [
+  "provider",
+  "model",
+  "voice",
+  "reasoningEffort",
+  "serviceTier",
+  "baseUrl",
+];
 const visible = (value) =>
   Object.fromEntries(
     fields
-      .filter((key) => value[key] !== undefined)
+      .filter(
+        (key) =>
+          value[key] !== undefined &&
+          (key !== "baseUrl" || value.provider === "chatgptplus"),
+      )
       .map((key) => [key, value[key]]),
   );
 const providersOnly = (roles) =>

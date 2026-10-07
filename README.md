@@ -56,16 +56,32 @@ The four existing provider roles remain independent:
 
 | Role | Providers | Code defaults |
 | --- | --- | --- |
-| Live voice and captions | OpenAI / Gemini | OpenAI `gpt-live-1`, `marin` |
+| Live voice and captions | OpenAI / Gemini / ChatGPTPlus | OpenAI `gpt-live-1`, `marin`; ChatGPTPlus `gpt-live-1-codex`, `sol` |
 | Classroom decisions and summaries | OpenAI / DeepSeek | OpenAI `gpt-6-luna`, low, fast |
 | Preparation recordings | OpenAI / Gemini | OpenAI `gpt-transcribe` |
 | Parent chat, topics and plans | OpenAI / Gemini / DeepSeek | OpenAI `gpt-6-luna`, high, auto |
 
 These are application defaults, not guarantees of account access. Model names, voices and reasoning settings come from the environment. Only provider choices are editable in the settings UI and saved in `data/model-settings.json`. Active lessons, preparation, plan generation and transcription continue to block provider changes, but not language changes. Environment changes require a restart. OpenAI preparation always uses `auto`; only the OpenAI backend reads `OPENAI_BACKEND_SERVICE_TIER`.
 
-Keys are read only from process/system environment variables: `OPENAI_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY` (existing lowercase names are accepted). Keys in `.env` are ignored. No key-entry UI, cross-provider fallback or key persistence is added. Missing keys do not prevent reading local records.
+Keys are read only from process/system environment variables: `OPENAI_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, `PLANBRIDGE_API_KEY` (existing lowercase names are accepted). Keys in `.env` are ignored. No key-entry UI, cross-provider fallback or key persistence is added. Missing keys do not prevent reading local records.
 
 OpenAI Live uses WebRTC and a server control connection. Gemini uses native SDK WebSockets and local PCM transport. The providers receive the lesson's frozen language context; Gemini transcription hints use deduplicated BCP-47 language codes. Transcripts are not translated. Text and transcription adapters retain their separate official endpoints, parameters and key sources.
+
+### ChatGPTPlus / GPT Live Codex
+
+Select **ChatGPTPlus** for Live conversation in Settings and save. For the initial choice without a saved provider preference, use `LIVE_MODEL_PROVIDER=chatgptplus`. A saved `data/model-settings.json` provider choice takes precedence on restart. URL, model and voice are read from the project-root `.env` (process variables take precedence):
+
+```dotenv
+PLANBRIDGE_BASE_URL=http://miniserver:8787/v1
+PLANBRIDGE_LIVE_MODEL=gpt-live-1-codex
+CHATGPT_CODEX_VOICE=sol
+```
+
+Supported voices are `arbor`, `breeze`, `cove`, `ember`, `juniper`, `maple`, `sol`, `spruce`, `vale`. The model must remain `gpt-live-1-codex`; the gateway URL must end in `/v1`. Set `PLANBRIDGE_API_KEY` in the Windows user/system environment, then restart with `Restart-vox-lingo.cmd`. The launcher imports this key without writing it to disk. Model, voice and server address are read-only in Settings.
+
+This provider is ported from the read-only KI-Englischlehrerin implementation: authenticated preflight, HTTP session creation with client delegation, browser WebRTC audio, one backend sideband, and local SSE captions. Native DataChannel messages do not execute classroom tasks. Commands wait for native acknowledgements, and spoken feedback fits the 500 UTF-8 byte limit; oversized feedback is rewritten by the selected classroom backend while preserving the frozen lesson languages. Closure must be confirmed, otherwise the retained session ID permits an explicit retry or cleanup after restart. The classroom backend, Teacher and transcription providers remain separately configured.
+
+Optional `node scripts/smoke-chatgptplus.js --run` creates one real subscription Live session using synthetic browser audio and the configured Windows key. It checks WebRTC, sideband, command acknowledgements, spoken-output captions and confirmed closure without reading learner data. It requires the Playwright Chromium runtime used by browser tests. This consumes subscription usage. `check:api` checks gateway readiness for ChatGPTPlus, without creating a Live session.
 
 ## Data and Upgrades
 

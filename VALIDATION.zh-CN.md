@@ -2,6 +2,37 @@
 
 [English](VALIDATION.md)
 
+## 2026-10-07：发布检查
+
+`.gitignore` 补充忽略本地 OAuth 登录／令牌缓存和 HAR 网络抓包。忽略规则检查确认 `.env.example` 保留，本地配置、学习数据、依赖、构建产物和测试报告均被排除。完整暂存快照包含 **117 个文件**；未发现已配置的进程／Windows 密钥值或不应发布的本地／生成文件。凭据模式命中均已核查为合成测试值，`git diff --cached --check` 通过。
+
+发布验证通过：**215 / 215 Node 测试**、生产构建、构建结束后的 **42 / 42 Playwright 测试**，以及 `npm.cmd audit --omit=dev`，**0 个漏洞**。证据为 `.cache/publish-audit.json`、`.cache/publish-node-tests.log`、`.cache/publish-build.log`、`.cache/publish-browser-tests.log` 和 `.cache/publish-dependency-audit.log`。本次发布检查未重复真实供应商或物理音频测试。
+
+## 2026-10-07：GPT Live Codex / ChatGPTPlus 移植
+
+所有修改均在 `vox-lingo`。KI-Englischlehrerin 仅被只读检查，Git 状态保持不变，**103 个**受检源码／配置文件的哈希与参考快照一致。6 个模块与源项目逐字节一致：`server/planbridge-live.js`、`server/ai.js`、`server/model-settings.js`、`src/live-chatgptplus.js`、`src/live.js`、`src/transcripts.js`。
+
+接入保留 Vox-Lingo 的冻结课程语言、中性练习协议及界面翻译。完整语言提示仍在创建会话时传入，后续语言提醒缩短至网关的 500 字节限制内；反馈缩短保留教学／目标语言上下文。数据目录保护增加 KI-Englischlehrerin，`check:api` 的 PlanBridge 密钥只发送给该网关。
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| Node 单元／集成测试 | **215 / 215 通过** | `.cache/chatgptplus-unit-tests.log` |
+| 生产构建 | **通过** | `.cache/chatgptplus-build.log` |
+| 构建完成后的 Playwright 测试 | **42 / 42 通过** | `.cache/chatgptplus-browser-tests.log` |
+| 网关就绪及选定模型元数据 | **通过** | `.cache/chatgptplus-api-check.log` |
+| 真实合成 Live 会话 | **通过**，`http://miniserver:8787/v1`、`gpt-live-1-codex`、`sol` | `.cache/chatgptplus-live-smoke.log` |
+| 参考目录完整性及核心模块一致性 | **通过** | `.cache/chatgptplus-source-integrity.json` |
+| Windows runtime 脚本语法 | **0 个解析错误** | PowerShell parser |
+| 修改／新增文件及本地 `.env` 的密钥扫描 | **未发现已配置系统密钥值** | 本地内容扫描，不输出密钥 |
+
+覆盖全部 **36 种**服务商组合、仅保存服务商选择、环境优先级、URL／模型／voice 校验、唯一认证 sideband、原生确认关联、500 UTF-8 字节指令、真实 delegation ID、取消和迟到创建清理、控制器重建后的关闭重试、增量字幕去重，以及全部 **18 种**教学／目标语言组合的创建、欢迎提示及反馈缩短。浏览器检查包含媒体就绪后才打开麦克风、只接受 SSE 字幕、本地静音、确认关闭后释放 peer，以及三种界面语言在 390／1440 像素下的 ChatGPTPlus 设置布局。
+
+真实 smoke 使用临时 headless Chromium 和合成麦克风音频，不读取学习数据。每次运行创建一个会话，建立 WebRTC／sideband，收到原生指令确认、音频数据和口头输出字幕，未出现服务商错误，并在释放 peer 前收到 `finalized:true`。这验证了当前网关／账户的合成 Live 链路；真实麦克风／扬声器、儿童语音、口音／噪声、多语教学质量、长会话和 Safari／iPad 尚未验证。
+
+中间一次浏览器测试与构建重叠，在 `dist` 被替换时短暂读到既有的“请先构建”页面。最终整套浏览器测试在构建结束后运行并全部通过，该失败未要求修改产品代码。构建仅出现依赖注释标记警告，产物正常生成。
+
+通用 WebRTC／sideband 背景已对照 [OpenAI Docs：Server-side controls](https://developers.openai.com/api/docs/guides/voice-server-controls)；PlanBridge 原生模型、voice 及成功订阅链路以本地参考代码和本次真实合成检查为依据。
+
 ## 2026-09-28：Windows 脚本改名
 
 根目录 5 个 `.cmd` 和 `.ps1` 脚本均使用 `vox-lingo` 文件名。README 与关闭服务测试已引用新名称；`.gitignore` 忽略旧名称。验证结果：3 个 `.cmd` 引用的目标文件都存在，2 个 PowerShell 脚本语法解析无错误，`node --test test/shutdown.test.js` **1 / 1 通过**。本次检查没有实际运行启动脚本。

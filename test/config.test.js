@@ -37,14 +37,15 @@ function directory(t) {
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   return dir;
 }
-test("all 24 provider combinations select their own credentials and models", (t) => {
+test("all 36 provider combinations select their own credentials and models", (t) => {
   const dir = directory(t);
   const keys = {
     OPENAI_API_KEY: "test-openai",
     GEMINI_API_KEY: "test-gemini",
     DEEPSEEK_API_KEY: "test-deepseek",
+    PLANBRIDGE_API_KEY: "test-planbridge",
   };
-  for (const live of ["openai", "gemini"])
+  for (const live of ["openai", "gemini", "chatgptplus"])
     for (const backend of ["openai", "deepseek"])
       for (const transcription of ["openai", "gemini"])
         for (const teacher of ["openai", "gemini", "deepseek"]) {
@@ -67,18 +68,31 @@ test("all 24 provider combinations select their own credentials and models", (t)
             assert.equal(config[role].provider, provider);
             assert.equal(
               config[role].apiKey,
-              keys[`${provider.toUpperCase()}_API_KEY`],
+              keys[
+                `${provider === "chatgptplus" ? "PLANBRIDGE" : provider.toUpperCase()}_API_KEY`
+              ],
             );
             assert.equal(
               config[role].apiKeyName,
-              `${provider.toUpperCase()}_API_KEY`,
+              `${provider === "chatgptplus" ? "PLANBRIDGE" : provider.toUpperCase()}_API_KEY`,
             );
           }
           assert.equal(
             config.live.model,
-            live === "openai" ? "gpt-live-1" : "gemini-3.8-live",
+            live === "chatgptplus"
+              ? "gpt-live-1-codex"
+              : live === "openai"
+                ? "gpt-live-1"
+                : "gemini-3.8-live",
           );
-          assert.equal(config.live.voice, live === "openai" ? "marin" : "Kore");
+          assert.equal(
+            config.live.voice,
+            live === "chatgptplus"
+              ? "sol"
+              : live === "openai"
+                ? "marin"
+                : "Kore",
+          );
           assert.equal(config.teacher.reasoningEffort, "high");
           assert.equal(config.backend.reasoningEffort, "low");
           assert.equal(
@@ -91,7 +105,7 @@ test("all 24 provider combinations select their own credentials and models", (t)
           );
           assert.doesNotMatch(
             JSON.stringify(publicConfig(config)),
-            /test-openai|test-gemini|test-deepseek/,
+            /test-openai|test-gemini|test-deepseek|test-planbridge/,
           );
         }
 });
@@ -200,11 +214,15 @@ test("invalid selected provider, effort, tier and port fail clearly; inactive se
     3212,
   );
 });
-test("original data is protected, including a junction into either source", (t) => {
+test("reference data is protected, including a junction into KI-Englischlehrerin", (t) => {
   const parent = directory(t),
-    dir = join(parent, "KI-Englischlehrerin");
+    dir = join(parent, "vox-lingo");
   mkdirSync(dir);
-  for (const source of ["EnglishLehrer", "EnglishLehrerGemini"]) {
+  for (const source of [
+    "EnglishLehrer",
+    "EnglishLehrerGemini",
+    "KI-Englischlehrerin",
+  ]) {
     const reference = join(parent, source);
     mkdirSync(reference);
     assert.throws(
@@ -222,4 +240,33 @@ test("original data is protected, including a junction into either source", (t) 
       /read-only/,
     );
   }
+});
+test("ChatGPTPlus ignores disk keys, exposes only safe settings and rejects incompatible model, voice and gateway URLs", (t) => {
+  const dir = directory(t);
+  writeFileSync(
+    join(dir, ".env"),
+    "LIVE_MODEL_PROVIDER=chatgptplus\nPLANBRIDGE_API_KEY=disk-secret\nCHATGPT_CODEX_VOICE=maple\n",
+  );
+  const missing = loadConfig({ OPENAI_API_KEY: "other-provider" }, dir);
+  assert.equal(missing.live.apiKey, "");
+  assert.equal(missing.live.voice, "maple");
+  assert.deepEqual(publicConfig(missing).missingClassroomKeys, [
+    "PLANBRIDGE_API_KEY",
+  ]);
+  const configured = loadConfig(
+    { PLANBRIDGE_API_KEY: "system-gateway", CHATGPT_CODEX_VOICE: "cove" },
+    dir,
+  );
+  assert.equal(configured.live.apiKey, "system-gateway");
+  assert.equal(configured.live.voice, "cove");
+  assert.doesNotMatch(
+    JSON.stringify(publicConfig(configured)),
+    /disk-secret|system-gateway/,
+  );
+  for (const env of [
+    { PLANBRIDGE_LIVE_MODEL: "gpt-live-1" },
+    { CHATGPT_CODEX_VOICE: "marin" },
+    { PLANBRIDGE_BASE_URL: "http://secret:password@miniserver:8787/v1" },
+  ])
+    assert.throws(() => loadConfig(env, dir));
 });

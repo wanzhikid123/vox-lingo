@@ -10,6 +10,7 @@ export function fakeMedia() {
       state.stopped++;
     },
   };
+  state.track = track;
   const stream = { getTracks: () => [track], getAudioTracks: () => [track] };
   Object.defineProperty(navigator, "mediaDevices", {
     value: { getUserMedia: async () => stream },
@@ -33,6 +34,7 @@ export function fakeMedia() {
   };
   window.RTCPeerConnection = class {
     iceGatheringState = "complete";
+    connectionState = "new";
     addTrack() {}
     async createOffer() {
       return { type: "offer", sdp: "fixture-offer-long-enough" };
@@ -67,6 +69,11 @@ export function fakeMedia() {
       this.channel.onmessage({
         data: JSON.stringify({ type: "session.started" }),
       });
+      window.fixtureConnectPeer = () => {
+        this.connectionState = "connected";
+        this.onconnectionstatechange?.();
+      };
+      if (!window.fixtureHoldConnection) window.fixtureConnectPeer();
     }
     close() {
       state.peerClosed++;

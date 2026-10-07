@@ -81,6 +81,7 @@ export function createApp({
             room.connecting ||
             room.ready ||
             room.ending ||
+            room.closeUnconfirmed ||
             room.busy ||
             room.socket?.readyState === 1,
         ) ||
@@ -205,9 +206,27 @@ export function createApp({
         tempo: speechTempoSchema.shape.tempo.default(DEFAULT_SPEECH_TEMPO),
       })
       .parse(req.body);
-    if (config.live.provider === "openai" && !sdp)
+    if (config.live.provider !== "gemini" && !sdp)
       throw new AppError("WebRTC-Verbindungsdaten fehlen.", 400);
-    res.json(await classroom.connect(req.params.id, tempo, sdp));
+    const disconnected = () => {
+      if (!res.writableFinished)
+        classroom.disconnect(req.params.id).catch(() => {});
+    };
+    res.on("close", disconnected);
+    try {
+      res.json(await classroom.connect(req.params.id, tempo, sdp));
+    } finally {
+      res.off("close", disconnected);
+    }
+  });
+  app.post("/api/lessons/:id/close-live", async (req, res) => {
+    store.lesson(req.params.id);
+    if (config.live.provider !== "chatgptplus")
+      throw new AppError(
+        "Dieser Abschluss gehört nicht zum gewählten Anbieter.",
+        409,
+      );
+    res.json(await classroom.closeConnection(req.params.id));
   });
   app.post("/api/lessons/:id/speech-tempo", async (req, res) => {
     const { tempo } = speechTempoSchema.parse(req.body);

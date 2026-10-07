@@ -2,6 +2,37 @@
 
 [简体中文](VALIDATION.zh-CN.md)
 
+## 2026-10-07: Publication Checks
+
+`.gitignore` additionally excludes local OAuth login/token caches and HAR network captures. Ignore checks retain `.env.example` and exclude local configuration, learner data, dependencies, generated output and test reports. The complete staged snapshot contains **117 files**; no configured process/Windows credentials or unintended local/generated files were found. Credential-pattern matches were reviewed as synthetic test fixtures, and `git diff --cached --check` passed.
+
+Publication validation passed: **215 / 215 Node tests**, production build, **42 / 42 Playwright tests** after build completion, and `npm.cmd audit --omit=dev` with **0 vulnerabilities**. Evidence: `.cache/publish-audit.json`, `.cache/publish-node-tests.log`, `.cache/publish-build.log`, `.cache/publish-browser-tests.log` and `.cache/publish-dependency-audit.log`. This publication check did not repeat real provider or physical-audio tests.
+
+## 2026-10-07: GPT Live Codex / ChatGPTPlus Port
+
+All changes are in `vox-lingo`. KI-Englischlehrerin was inspected read-only; its Git status remained unchanged and all **103** checked source/configuration file hashes matched the captured reference snapshot. Six modules match the reference byte-for-byte: `server/planbridge-live.js`, `server/ai.js`, `server/model-settings.js`, `src/live-chatgptplus.js`, `src/live.js`, `src/transcripts.js`.
+
+The integration retains Vox-Lingo's frozen languages, neutral practice contracts and UI translations. Full language instructions remain in session creation; short subsequent language reminders fit the gateway's 500-byte limit. Feedback compaction preserves instruction/target language context. The data-directory guard also protects KI-Englischlehrerin, and `check:api` routes its PlanBridge credential only to the gateway.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Node unit/integration suite | **215 / 215 passed** | `.cache/chatgptplus-unit-tests.log` |
+| Production build | **Passed** | `.cache/chatgptplus-build.log` |
+| Playwright suite, after build completion | **42 / 42 passed** | `.cache/chatgptplus-browser-tests.log` |
+| Gateway readiness and selected model metadata | **Passed** | `.cache/chatgptplus-api-check.log` |
+| Real synthetic Live session | **Passed**, `http://miniserver:8787/v1`, `gpt-live-1-codex`, `sol` | `.cache/chatgptplus-live-smoke.log` |
+| Reference file integrity and core-module parity | **Passed** | `.cache/chatgptplus-source-integrity.json` |
+| Windows runtime script syntax | **0 parse errors** | PowerShell parser |
+| Changed/new files plus local `.env` credential scan | **No known system-key values found** | Local content scan; no keys printed |
+
+Coverage includes all **36** provider combinations; provider-only persistence and environment precedence; URL/model/voice validation; unique authenticated sideband; native acknowledgement correlation; 500 UTF-8 byte commands; real delegation IDs; cancellation and late-create cleanup; failed-close retry after controller recreation; suffix-caption deduplication; and all **18** instruction/target combinations for creation, greeting and feedback rewriting. Browser checks cover media readiness before microphone activation, SSE-only captions, local muting, confirmed-close ordering, and ChatGPTPlus settings in three locales at 390/1440 pixels.
+
+The real smoke used an ephemeral headless Chromium session with synthetic microphone audio, without loading learner data. It created one session per run, established WebRTC and sideband, received native command acknowledgements, inbound audio and an output transcript, observed no provider errors, and received `finalized:true` before releasing the peer. This verifies this gateway/account's synthetic Live path; physical microphones/speakers, child speech, accents/noise, multilingual speech quality, long sessions and Safari/iPad remain untested.
+
+One intermediate browser run overlapped a build, temporarily serving the existing “build first” page while `dist` was being replaced. The final full browser run followed the completed build and passed without code changes for that failure. Build warnings concern dependency comment annotations and did not prevent output.
+
+The general WebRTC/sideband background was checked against [OpenAI Docs: Server-side controls](https://developers.openai.com/api/docs/guides/voice-server-controls). The native PlanBridge model, voices and successful subscription path are evidenced by the local reference implementation and this real synthetic check.
+
 ## 2026-09-28: Windows Launcher Rename
 
 The five root `.cmd` and `.ps1` launchers use `vox-lingo` filenames. README and the shutdown test reference the new names; `.gitignore` excludes the old launcher filenames. Verification: all three `.cmd` targets exist, both PowerShell scripts parsed without errors, and `node --test test/shutdown.test.js` passed **1 / 1**. The start script was not launched in this check.
